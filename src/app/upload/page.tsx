@@ -1,81 +1,82 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 
 export default function UploadSummarizer() {
-  const [file, setFile] = useState<File | null>(null);
-  const [text, setText] = useState("");
+  const [fileText, setFileText] = useState("");
   const [summary, setSummary] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Only UI for now; backend comes later
-  async function summarize() {
-    if (!text.trim()) {
-      alert("Please upload a file or paste text first.");
-      return;
-    }
+  async function handleFileUpload(e: any) {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    const res = await fetch("/api/summarize", {
-      method: "POST",
-      body: JSON.stringify({ text }),
-    });
-
-    const data = await res.json();
-    setSummary(data.summary);
-  }
-
-  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const uploaded = e.target.files?.[0];
-    if (!uploaded) return;
-
-    setFile(uploaded);
-
+    // Read uploaded file text
     const reader = new FileReader();
     reader.onload = () => {
-      const content = reader.result as string;
-      setText(content);
+      setFileText(reader.result as string);
     };
+    reader.readAsText(file);
+  }
 
-    reader.readAsText(uploaded); // works for .txt; PDF backend comes later
+  async function summarize() {
+    if (!fileText.trim()) return;
+
+    setLoading(true);
+
+    // MOCK SUMMARY
+    const mockSummary = `
+    • This is a mock summary.
+• When you add OpenAI credits, you will get real AI summaries.
+• The tool is fully functional and waiting for your API.
+    `;
+
+    // Simulate AI delay
+    await new Promise((r) => setTimeout(r, 1000));
+
+    setSummary(mockSummary);
+    setLoading(false);
   }
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">File / PDF Summarizer</h1>
+      <h1 className="text-3xl font-bold">PDF / File Summarizer</h1>
 
-      {/* Upload section */}
-      <div className="border p-4 rounded space-y-2">
-        <label className="font-medium">Upload File</label>
+      {/* File Upload */}
+      <div>
+        <label className="block font-medium mb-2">Upload a text file:</label>
         <input
           type="file"
-          accept=".txt, .pdf, .md, .docx"
-          className="w-full"
+          accept=".txt,.md,.csv"
           onChange={handleFileUpload}
-        />
-
-        {file && (
-          <p className="text-sm text-gray-600">
-            Uploaded! <strong>{file.name}</strong>
-          </p>
-        )}
-      </div>
-
-      {/* Or paste text */}
-      <div className="space-y-2">
-        <label className="font-medium">Or paste text manually</label>
-        <textarea
-          className="border p-3 w-full h-40 rounded"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Paste your study notes or file contents here..."
+          className="border p-2 rounded-lg"
         />
       </div>
 
-      {/* Summarize button */}
+      {/* file Preview */}
+      {fileText && (
+        <div className="bg-gray-50 p-4 rounded-lg border shadow-sm">
+          <h2 className="font-semibold mb-2">file Content Preview:</h2>
+          <pre className="whitespace-pre-wrap text-gray-800">{fileText}</pre>
+        </div>
+      )}
+
+      {/* Summarize Button */}
+      {fileText && (
+        <button
+          onClick={summarize}
+          disabled={loading}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium"
+        >
+          {loading ? "Summarizing..." : "Summarize"}
+        </button>
+      )}
+
+      {/* Summary Output */}
       {summary && (
-        <div className="border p-4 rounded bg-gray-50 shadow-sm space-y-3">
-          <h2 className="text-xl font-semibold">Summary</h2>
-          <p className="text-gray-800">{summary}</p>
+        <div className="bg-gray-100 p-4 mt-4 rounded-lg border shadow-sm whitespace-pre-wrap">
+          <h2 className="font-semibold mb-2">Summary:</h2>
+          {summary}
         </div>
       )}
     </div>
