@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <main className="p-10 space-y-6">
       <h1 className="text-4xl font-bold"> AI Study Companion</h1>
-      <p className="text-muted foreground text-lg">
+      <p className="text-lg font-medium text-gray-500">
         What would you like to do today?
       </p>
 
